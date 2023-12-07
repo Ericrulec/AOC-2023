@@ -39,7 +39,6 @@ func main() {
 			num_color_list := strings.Split(set, ",")
 			if i == 0 {
 				game_id, _ = strconv.Atoi(strings.Fields(num_color_list[0])[1])
-				fmt.Println(num_color_list)
 			}
 
 			m1["red"] = 12
@@ -64,8 +63,8 @@ func main() {
 				}
 			}
 		}
-		p2 += (m2["red"] * m2["blue"] * m2["green"])
 		p1 += game_id
+		p2 += (m2["red"] * m2["blue"] * m2["green"])
 	}
 	fmt.Println("Part 1", p1)
 	fmt.Println("Part 2", p2)
