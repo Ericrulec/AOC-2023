@@ -11,6 +11,7 @@ import (
 func main() {
 
 	var p1 int = 0
+	var p2 int = 0
 
 	file, err := os.Open("input")
 	if err != nil {
@@ -20,7 +21,8 @@ func main() {
 
 	scanner := bufio.NewScanner(file)
 	replacer := strings.NewReplacer(":", ",")
-	m := make(map[string]int)
+	m1 := make(map[string]int)
+	m2 := make(map[string]int)
 
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -28,32 +30,43 @@ func main() {
 
 		line = replacer.Replace(line)
 		sets := strings.Split(line, ";")
+
+		m2["red"] = 0
+		m2["green"] = 0
+		m2["blue"] = 0
+
 		for i, set := range sets {
 			num_color_list := strings.Split(set, ",")
 			if i == 0 {
 				game_id, _ = strconv.Atoi(strings.Fields(num_color_list[0])[1])
-            fmt.Println(num_color_list)
+				fmt.Println(num_color_list)
 			}
 
-			m["red"] = 12
-			m["green"] = 13
-			m["blue"] = 14
+			m1["red"] = 12
+			m1["green"] = 13
+			m1["blue"] = 14
 
 			for _, s := range num_color_list {
 				num_color := strings.Fields(s)
-				_, ok := m[num_color[1]]
+				_, ok := m1[num_color[1]]
 				if ok {
 					num, _ := strconv.Atoi(num_color[0])
-					m[num_color[1]] -= num
+					m1[num_color[1]] -= num
+                    
+					if m2[num_color[1]] < num {
+                        m2[num_color[1]] = num
+                    }
 				}
 			}
-			for _, v := range m {
+			for _, v := range m1 {
 				if v < 0 {
 					game_id = 0
 				}
 			}
 		}
+        p2 += (m2["red"]*m2["blue"]*m2["green"])
 		p1 += game_id
 	}
-	fmt.Println(p1)
+	fmt.Println("Part 1",p1)
+	fmt.Println("Part 2",p2)
 }
