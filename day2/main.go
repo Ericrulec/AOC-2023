@@ -52,10 +52,10 @@ func main() {
 				if ok {
 					num, _ := strconv.Atoi(num_color[0])
 					m1[num_color[1]] -= num
-                    
+
 					if m2[num_color[1]] < num {
-                        m2[num_color[1]] = num
-                    }
+						m2[num_color[1]] = num
+					}
 				}
 			}
 			for _, v := range m1 {
@@ -64,9 +64,9 @@ func main() {
 				}
 			}
 		}
-        p2 += (m2["red"]*m2["blue"]*m2["green"])
+		p2 += (m2["red"] * m2["blue"] * m2["green"])
 		p1 += game_id
 	}
-	fmt.Println("Part 1",p1)
-	fmt.Println("Part 2",p2)
+	fmt.Println("Part 1", p1)
+	fmt.Println("Part 2", p2)
 }
