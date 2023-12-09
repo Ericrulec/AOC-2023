@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"strconv"
 	"unicode"
 )
 
 func main() {
 
-	//var p1 int = 0;
+	var p1 int = 0
 
 	file, err := os.ReadFile("input")
 	if err != nil {
@@ -29,10 +30,25 @@ func main() {
 		var nbh_index_list []int
 		if num != "" {
 			nbh_index_list = get_nbh_index_list(i-len(num), line_length, len(num), input)
-		    fmt.Println(num, nbh_index_list)
+		}
+		input_length := len(input)
+		for _, nbh_index := range nbh_index_list {
+			if input_length > nbh_index && nbh_index > 0 {
+				fmt.Println(nbh_index,string(input[nbh_index]))
+				if string(input[nbh_index]) != "." && !unicode.IsNumber(rune(input[nbh_index])) {
+					n, err := strconv.Atoi(num)
+					if err != nil {
+						continue
+					}
+					fmt.Println(n)
+					p1 += n
+					break
+				}
+			}
 		}
 		num = ""
 	}
+	fmt.Println("Part 1:", p1)
 }
 
 func get_nbh_index_list(start_index int, line_length int, num_length int, input []byte) []int {
