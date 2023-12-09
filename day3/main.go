@@ -12,8 +12,10 @@ import (
 func main() {
 
 	var p1 int = 0
-
-	file, err := os.ReadFile("input")
+	// With test
+	// Part 1: 925
+	// Part 2: 6756
+	file, err := os.ReadFile("test")
 	if err != nil {
 		return
 	}
@@ -34,7 +36,7 @@ func main() {
 		input_length := len(input)
 		for _, nbh_index := range nbh_index_list {
 			if input_length > nbh_index && nbh_index > 0 {
-				fmt.Println(nbh_index,string(input[nbh_index]))
+				fmt.Println(nbh_index, string(input[nbh_index]))
 				if string(input[nbh_index]) != "." && !unicode.IsNumber(rune(input[nbh_index])) {
 					n, err := strconv.Atoi(num)
 					if err != nil {
