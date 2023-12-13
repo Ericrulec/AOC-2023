@@ -22,6 +22,7 @@ func main() {
 
 	var seeds []string
 	var seeds_done bool = false
+
 	start_indexes := make([]int, 7)
 	var lines []string
 
@@ -57,9 +58,7 @@ func main() {
 			start_indexes[6] = line_number + 1
 		}
 
-		if line_number > 3 {
-			lines = append(lines, line)
-		}
+		lines = append(lines, line)
 		line_number += 1
 	}
 
@@ -74,7 +73,6 @@ func main() {
             }
 			i := 0
 			for {
-			    line := lines[start_indexes[j]+i]
                 if start_indexes[j]+i > len(lines)-1 {
                     break
                 }
@@ -83,6 +81,7 @@ func main() {
                         break
                     }
                 }
+			    line := lines[start_indexes[j]+i]
 				fields := strings.Fields(line)
                 dest_src_range := make([]int,3)
 				for i, s := range fields {
@@ -105,7 +104,6 @@ func main() {
         }
     }
     p1 = lowest
-    fmt.Println(m1)
     fmt.Println("Part 1:",p1)
 
 }
