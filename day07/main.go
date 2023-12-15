@@ -99,6 +99,9 @@ func main() {
 			}
 		}
 
+        if len(counter)==3 && max2==4 {
+            fmt.Println(max,max2,len(counter))
+        }
 		leading_value := ""
 		leading_value_2 := ""
 
@@ -124,15 +127,16 @@ func main() {
 			// two pair
 			leading_value = "3"
 			leading_value_2 = "3"
-
 			// 3 of a kind
 			if max == 3 {
 				leading_value = "4"
 				leading_value_2 = "4"
 			}
+            // fullhouse
 			if max == 2 && max2 == 3 {
 				leading_value_2 = "5"
 			}
+            // 4 of a kind
 			if max2 == 4 {
 				leading_value_2 = "6"
 			}
@@ -140,11 +144,13 @@ func main() {
 			// one pair
 			leading_value = "2"
 			leading_value_2 = "2"
+            // 3 of a kind
 			if max2 == 3 {
 				leading_value_2 = "4"
 			}
 		case 5:
 			leading_value = "1"
+			leading_value_2 = "1"
 			if max2 == 2 {
 				leading_value_2 = "2"
 			}
@@ -180,10 +186,10 @@ func main() {
 	sort.Slice(ranks2, func(i, j int) bool {
 		return ranks2[i].Score < ranks2[j].Score
 	})
-	for i, rank := range ranks2 {
+	for i, _ := range ranks2 {
 		ranks2[i].Rank = i + 1
 		p2 += (i + 1) * ranks2[i].Bid
-		fmt.Println(rank)
+		//fmt.Println(rank)
 	}
 
 	fmt.Println("Part 1:", p1)
