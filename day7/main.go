@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -14,19 +15,23 @@ type Player struct {
 }
 
 type Rank struct {
-	Player *Player
+	Rank   int
 	Score  int64
+	Hand   string
+	Player *Player
 }
 
 func main() {
-	file, err := os.Open("test")
+	var p1 int
+
+	file, err := os.Open("input")
 	if err != nil {
 		return
 	}
 	defer file.Close()
 
-	players := make([]Player, 0, 5)
-    ranks := make([]Rank,0,5)
+	players := make([]Player, 0, 1000)
+	ranks := make([]Rank, 0, 1000)
 
 	card_score_map := make(map[string]string)
 	// Convert card values into equivalent hex values
@@ -51,6 +56,7 @@ func main() {
 		}
 	}
 
+	// Init
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -61,25 +67,54 @@ func main() {
 		players = append(players, player)
 	}
 
+	// Scoring
 	for _, player := range players {
 		counter := make(map[rune]int)
 		for _, c := range player.Hand {
 			counter[c] += 1
 		}
+
 		var max int
 		for _, v := range counter {
 			if max < v {
 				max = v
 			}
 		}
+		var min int
+		for _, v := range counter {
+			if v == max {
+				continue
+			}
+			min = v
+		}
+		fullhouse := false
+		if max == 3 && min == 2 {
+			fullhouse = true
+		}
+
 		score_str := ""
 		for i := 0; i < max; i++ {
 			score_str += card_score_map[player.Hand[i:i+1]]
-			fmt.Println(score_str)
 		}
-        score,_:=strconv.ParseInt(score_str,16,32) 
-        rank := Rank{Score:score}
-        ranks = append(ranks, rank)
-        fmt.Println(rank)
+
+		if fullhouse {
+			score_str = "1" + score_str
+		}
+		score, _ := strconv.ParseInt(score_str, 16, 32)
+		rank := Rank{Score: score, Player: &player, Hand: player.Hand}
+		ranks = append(ranks, rank)
 	}
+
+    // Sort and rank
+	sort.Slice(ranks, func(i, j int) bool {
+		return ranks[i].Score < ranks[j].Score
+	})
+	for i, rank := range ranks {
+		ranks[i].Rank = i + 1
+		p1 += i + 1*ranks[i].Player.Bid
+		fmt.Println(rank)
+	}
+
+	fmt.Println("Part 1:", p1)
+
 }
