@@ -26,7 +26,7 @@ func main() {
 
 	file, err := os.Open("input")
 	if err != nil {
-		return
+		panic(err)
 	}
 	defer file.Close()
 
@@ -80,15 +80,8 @@ func main() {
 				max = v
 			}
 		}
-		var min int
-		for _, v := range counter {
-			if v == max {
-				continue
-			}
-			min = v
-		}
 		fullhouse := false
-		if max == 3 && min == 2 {
+		if max == 3 && len(counter) == 2 {
 			fullhouse = true
 		}
 
