@@ -15,14 +15,15 @@ type Player struct {
 }
 
 type Rank struct {
-	Rank   int
-	Score  int64
-	Hand   string
-    Bid int
+	Rank  int
+	Score int64
+	Hand  string
+	Bid   int
 }
 
 func main() {
 	var p1 int
+	var p2 int
 
 	file, err := os.Open("input")
 	if err != nil {
@@ -32,27 +33,35 @@ func main() {
 
 	players := make([]Player, 0, 1000)
 	ranks := make([]Rank, 0, 1000)
+	ranks2 := make([]Rank, 0, 1000)
 
 	card_score_map := make(map[string]string)
+	card_score_map2 := make(map[string]string)
 	// Convert card values into equivalent hex values
 	for _, c := range "23456789" {
 		card_score_map[string(c)] = string(c)
+		card_score_map2[string(c)] = string(c)
 	}
 	for _, c := range "TJQKA" {
 		if c == rune('T') {
 			card_score_map[string(c)] = "a"
+			card_score_map2[string(c)] = "a"
 		}
 		if c == 'J' {
 			card_score_map[string(c)] = "b"
+			card_score_map2[string(c)] = "1"
 		}
 		if c == 'Q' {
 			card_score_map[string(c)] = "c"
+			card_score_map2[string(c)] = "c"
 		}
 		if c == 'K' {
 			card_score_map[string(c)] = "d"
+			card_score_map2[string(c)] = "d"
 		}
 		if c == 'A' {
 			card_score_map[string(c)] = "e"
+			card_score_map2[string(c)] = "e"
 		}
 	}
 
@@ -75,47 +84,90 @@ func main() {
 		}
 
 		var max int
-		for _, v := range counter {
+		var max2 int // max2 accounts for wildcard
+		for c, v := range counter {
 			if max < v {
 				max = v
 			}
+			if max2 < v && c != 'J' {
+				max2 = v
+			}
 		}
+		for c := range counter {
+			if c == 'J' {
+				max2 += 1
+			}
+		}
+
 		leading_value := ""
+		leading_value_2 := ""
+
+		// TODO: Something is wrong here I think
 		switch len(counter) {
-		case 1: // 5 of a kind
+		case 1:
+			// 5 of a kind
 			leading_value = "7"
-		case 2: 
+			leading_value_2 = "7"
+		case 2:
 			// full house
 			leading_value = "5"
+			leading_value_2 = "5"
 			// 4 of a kind
 			if max == 4 {
 				leading_value = "6"
+				leading_value_2 = "6"
 			}
-		case 3: // 3 of a kind or two pair
+			if max2 == 5 {
+				leading_value_2 = "7"
+			}
+		case 3:
+			// two pair
 			leading_value = "3"
+			leading_value_2 = "3"
 
+			// 3 of a kind
 			if max == 3 {
 				leading_value = "4"
+				leading_value_2 = "4"
 			}
-		case 4: // one pair
+			if max == 2 && max2 == 3 {
+				leading_value_2 = "5"
+			}
+			if max2 == 4 {
+				leading_value_2 = "6"
+			}
+		case 4:
+			// one pair
 			leading_value = "2"
+			leading_value_2 = "2"
+			if max2 == 3 {
+				leading_value_2 = "4"
+			}
 		case 5:
 			leading_value = "1"
+			if max2 == 2 {
+				leading_value_2 = "2"
+			}
 		default:
 			panic("never happens")
 		}
 
 		score_str := leading_value
+		score_str_2 := leading_value_2
 		for i := 0; i < 5; i++ {
 			score_str = score_str + card_score_map[player.Hand[i:i+1]]
+			score_str_2 = score_str_2 + card_score_map2[player.Hand[i:i+1]]
 		}
 
 		score, _ := strconv.ParseInt(score_str, 16, 64)
+		score2, _ := strconv.ParseInt(score_str_2, 16, 64)
 		rank := Rank{Score: score, Bid: player.Bid, Hand: player.Hand}
+		rank2 := Rank{Score: score2, Bid: player.Bid, Hand: player.Hand}
 		ranks = append(ranks, rank)
+		ranks2 = append(ranks2, rank2)
 	}
 
-	// Sort and rank
+	// Sort Part 1
 	sort.Slice(ranks, func(i, j int) bool {
 		return ranks[i].Score < ranks[j].Score
 	})
@@ -124,6 +176,17 @@ func main() {
 		p1 += (i + 1) * ranks[i].Bid
 	}
 
+	// Sort Part 2
+	sort.Slice(ranks2, func(i, j int) bool {
+		return ranks2[i].Score < ranks2[j].Score
+	})
+	for i, rank := range ranks2 {
+		ranks2[i].Rank = i + 1
+		p2 += (i + 1) * ranks2[i].Bid
+		fmt.Println(rank)
+	}
+
 	fmt.Println("Part 1:", p1)
+	fmt.Println("Part 2:", p2)
 
 }
