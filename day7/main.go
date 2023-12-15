@@ -18,7 +18,7 @@ type Rank struct {
 	Rank   int
 	Score  int64
 	Hand   string
-	Player *Player
+    Bid int
 }
 
 func main() {
@@ -40,19 +40,19 @@ func main() {
 	}
 	for _, c := range "TJQKA" {
 		if c == rune('T') {
-			card_score_map[string(c)] = "A"
+			card_score_map[string(c)] = "a"
 		}
 		if c == 'J' {
-			card_score_map[string(c)] = "B"
+			card_score_map[string(c)] = "b"
 		}
 		if c == 'Q' {
-			card_score_map[string(c)] = "C"
+			card_score_map[string(c)] = "c"
 		}
 		if c == 'K' {
-			card_score_map[string(c)] = "D"
+			card_score_map[string(c)] = "d"
 		}
 		if c == 'A' {
-			card_score_map[string(c)] = "E"
+			card_score_map[string(c)] = "e"
 		}
 	}
 
@@ -80,32 +80,48 @@ func main() {
 				max = v
 			}
 		}
-		fullhouse := false
-		if max == 3 && len(counter) == 2 {
-			fullhouse = true
+		leading_value := ""
+		switch len(counter) {
+		case 1: // 5 of a kind
+			leading_value = "7"
+		case 2: 
+			// full house
+			leading_value = "5"
+			// 4 of a kind
+			if max == 4 {
+				leading_value = "6"
+			}
+		case 3: // 3 of a kind or two pair
+			leading_value = "3"
+
+			if max == 3 {
+				leading_value = "4"
+			}
+		case 4: // one pair
+			leading_value = "2"
+		case 5:
+			leading_value = "1"
+		default:
+			panic("never happens")
 		}
 
-		score_str := ""
-		for i := 0; i < max; i++ {
-			score_str += card_score_map[player.Hand[i:i+1]]
+		score_str := leading_value
+		for i := 0; i < 5; i++ {
+			score_str = score_str + card_score_map[player.Hand[i:i+1]]
 		}
 
-		if fullhouse {
-			score_str = "1" + score_str
-		}
-		score, _ := strconv.ParseInt(score_str, 16, 32)
-		rank := Rank{Score: score, Player: &player, Hand: player.Hand}
+		score, _ := strconv.ParseInt(score_str, 16, 64)
+		rank := Rank{Score: score, Bid: player.Bid, Hand: player.Hand}
 		ranks = append(ranks, rank)
 	}
 
-    // Sort and rank
+	// Sort and rank
 	sort.Slice(ranks, func(i, j int) bool {
 		return ranks[i].Score < ranks[j].Score
 	})
-	for i, rank := range ranks {
+	for i := range ranks {
 		ranks[i].Rank = i + 1
-		p1 += i + 1*ranks[i].Player.Bid
-		fmt.Println(rank)
+		p1 += (i + 1) * ranks[i].Bid
 	}
 
 	fmt.Println("Part 1:", p1)
