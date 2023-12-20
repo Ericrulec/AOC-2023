@@ -1,7 +1,7 @@
 package main
 
 import (
-	"bytes"
+	"bufio"
 	"fmt"
 	"math"
 	"os"
@@ -10,68 +10,125 @@ import (
 	"unicode"
 )
 
-func main() {
+type Coordinate struct {
+	x int
+	y int
+}
+type Number struct {
+	Number      int
+	Coordinates []Coordinate
+}
+type Symbol struct {
+	Coordinates Coordinate
+	Gear        bool
+}
 
-	var p1 int = 0
+const symbols_str = "*+$-/@%#=&"
+
+func main() {
+	var p1 int
+	var p2 int
+
 	// With test
 	// Part 1: 925
 	// Part 2: 6756
-	file, err := os.ReadFile("test")
+	file, err := os.Open("input")
 	if err != nil {
-		return
+		panic(err)
 	}
-	line_length := bytes.IndexByte(file, '\n')
-	input := make([]byte, len(file))
-	copy(input, file)
+	defer file.Close()
 
-	const symbols = "*+$-/@%#=&"
-	var num string
+	var numbers []Number
+	var symbols []Symbol
 
-	for i, byte := range file {
-		if unicode.IsNumber(rune(byte)) {
-			num += string(byte)
-			continue
+	line_length := 0
+	scanner := bufio.NewScanner(file)
+	y := 0
+	for scanner.Scan() {
+		var num_str string = ""
+		var num_coordinates []Coordinate
+		line := scanner.Text()
+		if line_length == 0 {
+			line_length = len(line)
 		}
-		var nbh_index_list []int
-		if num != "" {
-			nbh_index_list = get_nbh_index_list(i-len(num), line_length, len(num), input)
-			fmt.Println(nbh_index_list)
+		for i, c := range line {
+			var coordinates []Coordinate
+			if unicode.IsNumber(c) {
+				num_str += string(c)
+				num_coordinates = append(num_coordinates, Coordinate{x: i, y: y})
+				if i+1 == line_length {
+					goto EOL
+				}
+				continue
+			}
+		EOL:
+			if num_str != "" {
+				num, _ := strconv.Atoi(num_str)
+				for _, cord := range num_coordinates {
+					coordinates = append(coordinates, Coordinate{x: cord.x, y: cord.y})
+				}
+				numbers = append(numbers, Number{Number: num, Coordinates: coordinates})
+
+				num_str = ""
+				num_coordinates = num_coordinates[:0]
+			}
+			if strings.ContainsAny(string(c), symbols_str) {
+				var gear bool = false
+				if c == '*' {
+					gear = true
+				}
+				symbols = append(symbols, Symbol{
+					Coordinates: Coordinate{x: i, y: y},
+					Gear:        gear,
+				})
+				continue
+			}
 		}
-		input_length := len(input)
-		for _, nbh_index := range nbh_index_list {
-			if input_length > nbh_index && nbh_index > 0 {
-				fmt.Println(nbh_index, string(input[nbh_index]))
-				if strings.ContainsAny(string(input[nbh_index]), symbols) {
-					n, err := strconv.Atoi(num)
-					if err != nil {
+		y++
+	}
+	sym_map := make(map[string][]int, len(symbols))
+	for _, num := range numbers {
+		for _, num_cord := range num.Coordinates {
+			for _, symbol := range symbols {
+				nbhs := symbol.nbh()
+				for _, cord := range nbhs {
+					if cord.x < 0 || line_length <= cord.x || cord.y < 0 || y < cord.y {
 						continue
 					}
-					fmt.Println(n)
-					p1 += n
-					break
+					if cord.x == num_cord.x && cord.y == num_cord.y {
+						p1 += num.Number
+						if symbol.Gear {
+							x := strconv.Itoa(symbol.Coordinates.x)
+							y := strconv.Itoa(symbol.Coordinates.y)
+							id := x + "," + y
+							sym_map[id] = append(sym_map[id], num.Number)
+
+						}
+						goto out
+					}
 				}
 			}
 		}
-		num = ""
+	out:
 	}
+
+	for _, nums := range sym_map {
+		if len(nums) == 2 {
+			p2 += nums[0] * nums[1]
+		}
+	}
+
 	fmt.Println("Part 1:", p1)
+	fmt.Println("Part 2:", p2)
 }
 
-// TODO: The neighborhood around points on the edge get wrapped around to the next/previous line.
-//
-//	I need a (x,y) abstraction then convert this to appropiate index, if I want to do it this way.
-func get_nbh_index_list(start_index int, line_length int, num_length int, input []byte) []int {
-	nbhs := 9 + (num_length-1)*3
-	nbh_index_list := make([]int, nbhs)
-	for i := 0; i < nbhs; i++ {
-		y := int(math.Floor(float64(i/(2+num_length))) - 1)
-		x := i%(nbhs/3) - 1
-		if y == 0 && -1 < x && x < num_length {
-			nbh_index_list[i] = -1
-			continue
-		}
-		final_index := start_index + y*line_length + x
-		nbh_index_list[i] = final_index
+func (symbol *Symbol) nbh() []Coordinate {
+	ret := make([]Coordinate, 0, 9)
+	for i := 0; i < 9; i++ {
+		prefix := int(math.Floor(float64(i/3)) - 1)
+		x := symbol.Coordinates.x + i%3 - 1
+		y := symbol.Coordinates.y + prefix
+		ret = append(ret, Coordinate{x: x, y: y})
 	}
-	return nbh_index_list
+	return ret
 }
